@@ -40,16 +40,11 @@ var mapCreditsInfo = map[string]float64{
 	"Silver": 17,
 	"Gold":   14450,
 	"Iron":   195.5,
+	"None":   1,
 }
 var InvalidQuestionError = "I have no idea what you are talking about"
 
-type StatementType struct {
-	Assumption                bool
-	OnlyIntergalacticQuestion bool
-	CreditQuestionWithGold    bool
-	CreditQuestionWithIron    bool
-	CreditQuestionWithSilver  bool
-}
+type StatementType struct{}
 
 func NewStatement() *StatementType {
 	return &StatementType{}
@@ -137,7 +132,6 @@ func romantoint(s string) (int, error) {
 			if romanSequence > 3 {
 				return 0, errors.New("Requested number is in invalid format")
 			}
-
 			numberAsInt += currentNumeral
 		} else {
 			numberAsInt -= currentNumeral
@@ -150,19 +144,101 @@ func romantoint(s string) (int, error) {
 	return numberAsInt, nil
 }
 
+func calculateCredit(statement string, resourceType string) float64 {
+	var iR IRoman
+	roman := NewRoman()
+	iR = roman
+	iR.GetRomanString(statement)
+	romanInt, err := romantoint(roman.romanString)
+	if err != nil {
+		log.Printf("Roman Conversion Error : %v", err)
+	}
+	return float64(romanInt) * mapCreditsInfo[resourceType]
+}
+
 func (s *StatementType) Statement(statement string) {
-	if strings.Contains(statement, "?") && (strings.Contains(statement, "Gold") || strings.Contains(statement, "Silver") || strings.Contains(statement, "Iron")) {
+	if strings.Contains(statement, "how many Credits") && (strings.Contains(statement, "Gold") || strings.Contains(statement, "Silver") || strings.Contains(statement, "Iron")) {
 		if strings.Contains(statement, "Gold") {
-			s.CreditQuestionWithGold = true
+			fmt.Printf("%s is %v Credits \n", statement, calculateCredit(statement, "Gold"))
 		} else if strings.Contains(statement, "Silver") {
-			s.CreditQuestionWithSilver = true
+			fmt.Printf("%s is %v Credits \n", statement, calculateCredit(statement, "Silver"))
 		} else if strings.Contains(statement, "Iron") {
-			s.CreditQuestionWithIron = true
+			fmt.Printf("%s is %v Credits \n", statement, calculateCredit(statement, "Iron"))
 		}
-	} else if strings.Contains(statement, "?") {
-		s.OnlyIntergalacticQuestion = true
+	} else if strings.Contains(statement, "how much") {
+		fmt.Printf("%s is %v \n", statement, calculateCredit(statement, "None"))
+	} else if strings.Contains(statement, "has more") || strings.Contains(statement, "larger than") {
+		var splitString []string
+		if strings.Contains(statement, "has more") {
+			splitString = strings.Split(statement, "has more")
+		}
+		if strings.Contains(statement, "larger than") {
+			splitString = strings.Split(statement, "larger than")
+		}
+		var leftString, rightString string
+		var leftCredit, rightCredit float64
+		if len(splitString) >= 2 {
+			leftString = splitString[0]
+			rightString = splitString[1]
+		}
+		if strings.Contains(leftString, "Gold") {
+			leftCredit = calculateCredit(leftString, "Gold")
+		} else if strings.Contains(leftString, "Silver") {
+			leftCredit = calculateCredit(leftString, "Silver")
+		} else if strings.Contains(leftString, "Iron") {
+			leftCredit = calculateCredit(leftString, "Iron")
+		}
+
+		if strings.Contains(rightString, "Gold") {
+			rightCredit = calculateCredit(rightString, "Gold")
+		} else if strings.Contains(rightString, "Silver") {
+			rightCredit = calculateCredit(rightString, "Silver")
+		} else if strings.Contains(rightString, "Iron") {
+			rightCredit = calculateCredit(rightString, "Iron")
+		}
+
+		if leftCredit > rightCredit {
+			fmt.Printf("%s has more %s", leftString, rightString)
+		} else {
+			fmt.Printf("%s has less %s", leftString, rightString)
+		}
+	} else if strings.Contains(statement, "has less") || strings.Contains(statement, "smaller than") {
+		var splitString []string
+		if strings.Contains(statement, "has less") {
+			splitString = strings.Split(statement, "has less")
+		}
+		if strings.Contains(statement, "smaller than") {
+			splitString = strings.Split(statement, "smaller  than")
+		}
+		var leftString, rightString string
+		var leftCredit, rightCredit float64
+		if len(splitString) >= 2 {
+			leftString = splitString[0]
+			rightString = splitString[1]
+		}
+		if strings.Contains(leftString, "Gold") {
+			leftCredit = calculateCredit(leftString, "Gold")
+		} else if strings.Contains(leftString, "Silver") {
+			leftCredit = calculateCredit(leftString, "Silver")
+		} else if strings.Contains(leftString, "Iron") {
+			leftCredit = calculateCredit(leftString, "Iron")
+		}
+
+		if strings.Contains(rightString, "Gold") {
+			rightCredit = calculateCredit(rightString, "Gold")
+		} else if strings.Contains(rightString, "Silver") {
+			rightCredit = calculateCredit(rightString, "Silver")
+		} else if strings.Contains(rightString, "Iron") {
+			rightCredit = calculateCredit(rightString, "Iron")
+		}
+
+		if leftCredit > rightCredit {
+			fmt.Printf("%s has more %s", leftString, rightString)
+		} else {
+			fmt.Printf("%s has less %s", leftString, rightString)
+		}
 	} else {
-		s.Assumption = true
+		fmt.Printf("Invalid Input")
 	}
 }
 
@@ -173,41 +249,8 @@ func main() {
 		log.Printf("Unable to read input statement %v", err)
 		return
 	}
-	var iR IRoman
+
 	statementType := NewStatement()
-	roman := NewRoman()
-
 	statementType.Statement(inputText)
-	iR = roman
-	iR.GetRomanString(inputText)
 
-	switch {
-	case statementType.CreditQuestionWithGold:
-		romanInt, err := romantoint(roman.romanString)
-		if err != nil {
-			log.Printf("Roman Conversion Error : %v", err)
-		}
-		fmt.Printf(" is %v Credits \n", float64(romanInt)*mapCreditsInfo["Gold"])
-
-	case statementType.CreditQuestionWithSilver:
-		romanInt, err := romantoint(roman.romanString)
-		if err != nil {
-			log.Printf("Roman Conversion Error : %v", err)
-		}
-		fmt.Println(float64(romanInt) * mapCreditsInfo["Silver"])
-
-	case statementType.CreditQuestionWithIron:
-		romanInt, err := romantoint(roman.romanString)
-		if err != nil {
-			log.Printf("Roman Conversion Error : %v", err)
-		}
-		fmt.Println(float64(romanInt) * mapCreditsInfo["Iron"])
-
-	case statementType.OnlyIntergalacticQuestion:
-		romanInt, err := romantoint(roman.romanString)
-		if err != nil {
-			log.Printf("Roman Conversion Error : %v", err)
-		}
-		fmt.Println(romanInt)
-	}
 }
