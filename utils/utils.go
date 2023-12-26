@@ -15,11 +15,6 @@ type Roman struct {
 	romanString string
 }
 
-// Statement implements IUtils.
-// func (*Roman) Statement(string) {
-// 	panic("unimplemented")
-// }
-
 func NewRoman() *Roman {
 	return &Roman{}
 }

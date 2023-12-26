@@ -10,7 +10,10 @@ import (
 
 var InvalidQuestionError = "I have no idea what you are talking about"
 
+const appName = "galaxy Merchant Trading Guide "
+
 func main() {
+	log.SetPrefix(appName + "\t")
 	log.Printf("Press ctrl-c to exit")
 	for {
 		reader := bufio.NewReader(os.Stdin)
